@@ -1,0 +1,18 @@
+---
+Checks: "modernize*, bugprone*, performance*,\
+cppcoreguidelines*, clang-analyzer-*, misc*,  \
+-modernize-use-trailing-return-type,\
+-cppcoreguidelines-non-private-member-variables-in-classes, \
+-misc-non-private-member-variables-in-classes, \
+-readability-avoid-const-params-in-decls, \
+-readability-static-accessed-through-instance, \
+-readability-else-after-return"
+
+
+WarningsAsErrors: ''
+HeaderFilterRegex: '.*'
+AnalyzeTemporaryDtors: false
+FormatStyle:     file
+...
+
+
