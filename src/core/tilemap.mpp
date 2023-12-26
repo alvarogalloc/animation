@@ -82,6 +82,7 @@ components::tilemap::tilemap(sf::Texture *text,
 void components::tilemap::draw(sf::RenderTarget &target,
   sf::RenderStates states) const
 {
+  states.transform *= getTransform();
   states.texture = tileset;
   target.draw(vertices, states);
 }

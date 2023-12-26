@@ -37,10 +37,17 @@ namespace components {
 
 }// namespace components
 
-sf::Vector2f world_to_coords(b2Vec2 vec)
+template <typename T>
+sf::Vector2<T> world_to_coords(b2Vec2 vec)
 {
-  return sf::Vector2f{ vec.x * upfactor, vec.y * upfactor };
+  return sf::Vector2<T>{ static_cast<T>(vec.x * upfactor), static_cast<T>(vec.y * upfactor) };
 }
+template <typename T>
+b2Vec2 coords_to_world(sf::Vector2<T> vec)
+{
+  return b2Vec2{ static_cast<float>(vec.x) / upfactor, static_cast<float>(vec.y) / upfactor };
+}
+
 std::unique_ptr<b2World> create_world()
 {
   return std::make_unique<b2World>(b2Vec2(0.f, gravity));

@@ -38,8 +38,9 @@ void make_map(ginseng::database &db)
     text = assets.get<sf::Texture>("tileset.png").get();
   });
   auto id = db.create_entity();
-  components::tilemap map{ text, sf::Vector2i{ 64, 64 }, level, 20, 10 };
-  db.add_component(id, map);
+  const auto tile_size = sf::Vector2i{ 18, 18 };
+  components::tilemap map{ text, tile_size, level, 20, 10 };
+  map.setScale(2, 2) db.add_component(id, map);
   db.visit([&](b2World *world) {
     db.add_component(
       id, physics::create_static_box(world, { 0.f, 19.f }, { 80.f, 2.f }));
