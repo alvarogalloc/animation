@@ -2,7 +2,9 @@
 add_requires("entt 3.12", "sfml 2.6", "fmt", "box2d")
 add_rules("mode.debug", "mode.release")
 set_languages("c++20")
-set_config("ldflags", "-ObjC")
+if is_plat("macosx") then
+  set_config("ldflags", "-ObjC")
+end
 
 target("animation")
     set_kind("binary")
@@ -10,8 +12,8 @@ target("animation")
     if is_plat("macosx") then
         add_frameworks("CoreFoundation", "CoreAudio", "IOKit", "Carbon", "AppKit", "AudioUnit")
     end
-    if is_mode("debug") then
-      add_defines("DEBUG")
+    if is_mode("release") then
+      add_defines("NDEBUG")
     end
     set_configdir("$(buildir)/$(plat)/$(arch)/$(mode)")
     add_configfiles("resources/*.png", {onlycopy = true})

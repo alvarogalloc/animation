@@ -32,10 +32,10 @@ export namespace say {
 
 void debug(std::string_view message)
 {
-#ifdef DEBUG
+#ifndef NDEBUG
   set_color(BOLDGREEN);
   _log("DEBUG", message);
-#endif// DEBUG
+#endif// NDEBUG
 }
 void info(std::string_view message)
 {

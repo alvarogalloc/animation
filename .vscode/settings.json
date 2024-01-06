@@ -1,0 +1,12 @@
+{
+    "cmake.generator": "Ninja",
+    "cmake.configureSettings": {
+        "CMAKE_TOOLCHAIN_FILE": "${userHome}/scripts/buildsystems/vcpkg.cmake"
+    },
+    "files.associations": {
+        "*.mpp": "cpp",
+        "unordered_map": "cpp",
+        "type_traits": "cpp",
+        "filesystem": "cpp"
+    }
+}
