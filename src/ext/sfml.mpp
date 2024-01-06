@@ -27,5 +27,5 @@ using sf::Vertex;
 using sf::PrimitiveType;
 using sf::Transformable;
 using sf::Drawable;
-template <typename T> using Vector2 = sf::Vector2<T>;
+using sf::Vector2;
 }// namespace sf

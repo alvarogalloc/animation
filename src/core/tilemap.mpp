@@ -1,8 +1,11 @@
 module;
 #include <cstdint>
+#include <fmt/format.h>
+#include <SFML/System/Vector2.hpp>
 export module tilemap;
 import components;
 import game;
+import say;
 
 export namespace components {
 struct tilemap
@@ -13,7 +16,8 @@ struct tilemap
     sf::Vector2i tileSize,
     const int *tiles,
     std::uint8_t width,
-    std::uint8_t height);
+    std::uint8_t height,
+    std::uint8_t tile_separation = 0);
 
   virtual void draw(sf::RenderTarget &target,
     sf::RenderStates states) const override;
@@ -31,11 +35,13 @@ components::tilemap::tilemap(sf::Texture *text,
   sf::Vector2i tileSize,
   const int *tiles,
   std::uint8_t width,
-  std::uint8_t height)
+  std::uint8_t height,
+  std::uint8_t tile_separation)
 {
   tileset = text;
   // resize the vertex array to fit the level size
   vertices.setPrimitiveType(sf::Triangles);
+  // this means two triangles per tile
   vertices.resize(width * height * 6);
 
   for (unsigned int i = 0; i < width; ++i)
@@ -43,10 +49,17 @@ components::tilemap::tilemap(sf::Texture *text,
     {
       // get the current tile number
       int tileNumber = tiles[i + j * width];
+      if (tileNumber == 0) continue;
+      // adjust to real values
+      --tileNumber;
 
       // find its position in the tileset texture
-      int tu = tileNumber % (tileset->getSize().x / tileSize.x);
-      int tv = tileNumber / (tileset->getSize().x / tileSize.x);
+      int tileset_column = tileNumber % (tileset->getSize().x / tileSize.x);
+      int tileset_row = tileNumber / (tileset->getSize().x / tileSize.x);
+      say::debug(fmt::format("tile number {} in row {} column {}",
+        tileNumber,
+        tileset_row,
+        tileset_column));
 
       // get a pointer to the triangles' vertices of the current tile
       sf::Vertex *triangles = &vertices[(i + j * width) * 6];
@@ -64,25 +77,36 @@ components::tilemap::tilemap(sf::Texture *text,
       triangles[5].position =
         sf::Vector2f((i + 1) * tileSize.x, (j + 1) * tileSize.y);
 
-      // define the 6 matching texture coordinates
-      triangles[0].texCoords = sf::Vector2f(tu * tileSize.x, tv * tileSize.y);
-      triangles[1].texCoords =
-        sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
+
+      const sf::Vector2f total_separation = { static_cast<float>(tileset_column * tile_separation),
+        static_cast<float>(tileset_row * tile_separation) };
+
+      const sf::Vector2f start_position = { static_cast<float>(tileset_column * tileSize.x),
+        static_cast<float>(tileset_row * tileSize.y) };
+
+      // first triangle
+      triangles[0].texCoords = start_position + total_separation;
+
+      triangles[1].texCoords = sf::Vector2f{ start_position.x + tileSize.x,
+        start_position.y } + total_separation;
+
       triangles[2].texCoords =
-        sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
-      triangles[3].texCoords =
-        sf::Vector2f(tu * tileSize.x, (tv + 1) * tileSize.y);
-      triangles[4].texCoords =
-        sf::Vector2f((tu + 1) * tileSize.x, tv * tileSize.y);
-      triangles[5].texCoords =
-        sf::Vector2f((tu + 1) * tileSize.x, (tv + 1) * tileSize.y);
+        sf::Vector2f{ start_position.x, start_position.y + tileSize.y }
+        + total_separation;
+
+      // second triangle
+      triangles[3].texCoords = triangles[2].texCoords;
+      triangles[4].texCoords = triangles[1].texCoords;
+      triangles[5].texCoords = sf::Vector2f{
+        start_position.x + tileSize.x, start_position.y + tileSize.y
+      } + total_separation;
     }
 }
 
 void components::tilemap::draw(sf::RenderTarget &target,
   sf::RenderStates states) const
 {
-  states.transform *= getTransform();
+  states.transform = getTransform();
   states.texture = tileset;
   target.draw(vertices, states);
 }

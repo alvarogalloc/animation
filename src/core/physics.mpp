@@ -135,7 +135,7 @@ public:
         b2Vec2(impulse, 0), body.body->GetWorldCenter(), true);
 
       // after step, set new data for drawing
-      sprite.setPosition(world_to_coords(body.body->GetPosition()));
+      sprite.setPosition(world_to_coords<float>(body.body->GetPosition()));
       sprite.setRotation(body.body->GetAngle() * 180 / b2_pi);
       // with the direction, if going left, flip the sprite, if going right,
       // reset it
