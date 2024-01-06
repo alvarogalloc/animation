@@ -5,14 +5,14 @@ import knight;
 import physics;
 import tilemap;
 import render;
-#include <filesystem>
 #include <box2d/box2d.h>
+#include <filesystem>
 
 void make_map(ginseng::database &db)
 {
   // clang-format off
   const int level[] ={  
-  123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,
+  100,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,
   123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,
   123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,
   123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,123,
@@ -46,7 +46,7 @@ void make_map(ginseng::database &db)
   db.add_component(id, map);
   db.visit([&](b2World *world) {
     db.add_component(
-      id, physics::create_static_box(world, { 0.f, 19.f }, { 80.f, 2.f }));
+      id, physics::create_static_box(world, { 0.f, 23.5f }, { 22.5f, 1.f }));
   });
 }
 

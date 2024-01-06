@@ -1,3 +1,5 @@
+module;
+#include <box2d/box2d.h>
 export module render;
 import sfml;
 import ginseng;
@@ -5,11 +7,13 @@ import components;
 import game;
 import tilemap;
 import say;
+import physics_debug_draw;
 
 export namespace render {
 class system
 {
   sf::RenderWindow *win;
+  DebugDraw debug_draw;
 
 public:
   system() = default;
@@ -22,7 +26,11 @@ module :private;
 
 void render::system::startup(ginseng::database &db)
 {
-  db.visit([&](sf::RenderWindow *window) { win = window; });
+  db.visit([&](sf::RenderWindow *window, b2World *world) {
+    win = window;
+    debug_draw.set_world(world);
+    debug_draw.SetFlags(b2Draw::e_shapeBit);
+  });
 }
 
 void render::system::update(ginseng::database &db)
@@ -56,4 +64,5 @@ void render::system::update(ginseng::database &db)
       win->draw(borderRect);
     }
   });
+  debug_draw.Draw();
 }

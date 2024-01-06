@@ -17,6 +17,7 @@ target("animation")
     end
     set_configdir("$(buildir)/$(plat)/$(arch)/$(mode)")
     add_configfiles("resources/*.png", {onlycopy = true})
+    os.cp("$(curdir)/resources/", "$(buildir)/$(plat)/$(arch)/$(mode)")
     add_files("src/*.cpp", "src/*.mpp", "src/ext/*.mpp", "src/core/*.mpp")
 
 --
