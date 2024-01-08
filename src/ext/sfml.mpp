@@ -14,6 +14,8 @@ using sf::IntRect;
 using sf::Keyboard;
 using sf::Mouse;
 using sf::RectangleShape;
+using sf::CircleShape;
+using sf::ConvexShape;
 using sf::RenderTarget;
 using sf::RenderWindow;
 using sf::Sprite;

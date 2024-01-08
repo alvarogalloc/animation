@@ -46,6 +46,8 @@ export
 {
   // ideal for 60 frames per second
   constexpr std::chrono::milliseconds frame_time(16);
+  constexpr std::uint32_t win_width{ 720 };
+  constexpr std::uint32_t win_height{ 720 };
 
   class game
   {
@@ -56,7 +58,7 @@ export
     using tag = ginseng::tag<struct game_tag_t>;
     game()
       : m_db(), m_assets("./resources"),
-        m_window(sf::VideoMode{ 720, 720 }, "Animations")
+        m_window(sf::VideoMode{ win_width, win_height }, "Animations")
     {
       m_window.setFramerateLimit(60);
     }

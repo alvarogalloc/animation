@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.28)
 project(learning-animation)
-set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD 20)
 
 # generate find_package for thesefind_package("entt", "sfml", "fmt", "box2d")
 
 find_package(EnTT CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
-find_package(glad CONFIG REQUIRED)
 find_package(box2d CONFIG REQUIRED)
 set(MODULE_FILES 
 "src/core/animation.mpp"
@@ -25,7 +24,7 @@ set(MODULE_FILES
 )
 
 add_executable(game "src/main.cpp")
-target_compile_features(game PRIVATE cxx_std_23)
+target_compile_features(game PRIVATE cxx_std_20)
 target_sources(game PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES
 ${MODULE_FILES})
 
@@ -35,4 +34,3 @@ target_link_libraries(game PRIVATE EnTT::EnTT)
 target_link_libraries(game PRIVATE sfml-system sfml-network sfml-graphics sfml-window)
 target_link_libraries(game PRIVATE fmt::fmt)
 target_link_libraries(game PRIVATE box2d::box2d)
-target_link_libraries(game PRIVATE glad::glad)

@@ -28,7 +28,8 @@ void render::system::startup(ginseng::database &db)
 {
   db.visit([&](sf::RenderWindow *window, b2World *world) {
     win = window;
-    debug_draw.set_world(world);
+    debug_draw.setWindow(window);
+    world->SetDebugDraw(&debug_draw);
     debug_draw.SetFlags(b2Draw::e_shapeBit);
   });
 }
@@ -64,5 +65,5 @@ void render::system::update(ginseng::database &db)
       win->draw(borderRect);
     }
   });
-  debug_draw.Draw();
+  db.visit([&](b2World *world) { world->DebugDraw(); });
 }
