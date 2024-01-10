@@ -16,21 +16,19 @@ export class assetmanager
   using hash_map = std::unordered_map<std::string_view, ptr<T>>;
 
 private:
+  // returns true if loaded successfully
   template<typename T>
-  bool load(std::string_view path, hash_map<T> &target_map, bool load = true)
+  bool load(std::string_view path, hash_map<T> &target_map)
   {
     bool error = false;
     // get type of the map
     auto [res, ok] = target_map.insert({ path, std::make_shared<T>() });
     error = !ok;
-    if (load)
-    {
-      if constexpr (std::is_same_v<T, sf::Music>)
-        error = !res->second->openFromFile(asset_path + path.data());
-      else
-        error = !res->second->loadFromFile(asset_path + path.data());
-    }
-    return error;
+    if constexpr (std::is_same_v<T, sf::Music>)
+      error = !res->second->openFromFile(asset_path + path.data());
+    else
+      error = !res->second->loadFromFile(asset_path + path.data());
+    return !error;
   }
 
 public:
@@ -52,13 +50,15 @@ public:
       container = &songs;
     else if constexpr (std::is_same_v<T, sf::Font>)
       container = &fonts;
-    else
-      // else if constexpr (std::is_same_v<T, sf::Texture>)
+    else if constexpr (std::is_same_v<T, sf::Texture>)
       container = &textures;
+    
+    if (!container) say::error("Asset Type is not supported");
+
     if (!container->contains(path))
     {
       say::debug("asset not loaded, loading");
-      if (!load(path, *container)) say::error("asset could not be loaded");
+      if (!load(path, *container)) say::error("error loading asset");
     } else
     {
       say::debug("asset already loaded, returning");

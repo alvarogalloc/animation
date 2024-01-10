@@ -13,19 +13,19 @@ find_package(box2d CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
 set(MODULE_FILES 
-"src/core/animation.mpp"
-"src/core/assetmanager.mpp"
-"src/core/components.mpp"
-"src/core/physics_debug_draw.mpp"
-"src/core/physics.mpp"
-"src/core/render.mpp"
-"src/core/say.mpp"
-"src/core/tilemap.mpp"
-"src/ext/box2d.mpp"
-"src/ext/ginseng.mpp"
-"src/ext/sfml.mpp"
-"src/game.mpp"
-"src/knight.mpp"
+"src/core/animation.cpp"
+"src/core/assetmanager.cpp"
+"src/core/components.cpp"
+"src/core/physics_debug_draw.cpp"
+"src/core/physics.cpp"
+"src/core/render.cpp"
+"src/core/say.cpp"
+"src/core/tilemap.cpp"
+"src/ext/box2d.cpp"
+"src/ext/ginseng.cpp"
+"src/ext/sfml.cpp"
+"src/game.cpp"
+"src/knight.cpp"
 )
 
 add_executable(game "src/main.cpp")
@@ -42,3 +42,5 @@ target_link_libraries(game PRIVATE box2d::box2d)
 target_link_libraries(game PRIVATE imgui::imgui)
 target_link_libraries(game PRIVATE ImGui-SFML::ImGui-SFML)
 target_link_libraries(game PRIVATE rooster_project_options rooster_project_warnings)
+# remove warning C4251 in msvc
+target_compile_options(game PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/wd4251>")

@@ -1,5 +1,3 @@
-module;
-#include <box2d/box2d.h>
 export module render;
 import sfml;
 import ginseng;
@@ -7,6 +5,7 @@ import components;
 import game;
 import tilemap;
 import say;
+import box2d;
 import physics_debug_draw;
 
 export namespace render {

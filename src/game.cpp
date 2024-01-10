@@ -1,6 +1,4 @@
 module;
-#include <fmt/format.h>
-
 #include <chrono>
 #include <functional>
 #include <thread>
@@ -48,7 +46,7 @@ export
 {
   // ideal for 60 frames per second
   constexpr std::chrono::milliseconds frame_time(16);
-  constexpr std::uint32_t win_width{ 720 };
+  constexpr std::uint32_t win_width{ 1280 };
   constexpr std::uint32_t win_height{ 720 };
 
   class game
@@ -125,7 +123,7 @@ void game::run()
   m_db.add_component(game_entity, m_assets);
   m_db.add_component(game_entity, m_flow);
   m_hook_setup.publish(m_db);
-  say::info(fmt::format("Time for startup {} s", elapsed_seconds(start)));
+  say::info(fmt::format("Time for startup {} seconds", elapsed_seconds(start)));
   start = gameclock::now();
   sf::Event ev;
   while (m_flow == flow::running && m_window.isOpen())
