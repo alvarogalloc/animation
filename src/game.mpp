@@ -134,7 +134,7 @@ void game::run()
     {
       if (ev.type == sf::Event::Closed) m_flow = flow::stop;
     }
-    m_db.add_component(game_entity, elapsed_seconds(start) * 1000.f);
+    m_db.add_component(game_entity, elapsed_seconds(start));
     m_hook_update.publish(m_db);
     start = gameclock::now();
     m_hook_render.publish(m_db);

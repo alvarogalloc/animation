@@ -1,10 +1,8 @@
 module;
 #include <cstdint>
-#include <fmt/format.h>
 export module tilemap;
 import sfml;
 import components;
-import say;
 
 export namespace components {
 struct tilemap
@@ -56,11 +54,6 @@ components::tilemap::tilemap(sf::Texture *text,
         static_cast<int>(tileset->getSize().x) / static_cast<int>(tileSize.x);
       int tileset_column = tileNumber % n_tiles_per_row;
       int tileset_row = tileNumber / n_tiles_per_row;
-
-      say::debug(fmt::format("tile number {} in row {} column {}",
-        tileNumber,
-        tileset_row,
-        tileset_column));
 
       // get a pointer to the triangles' vertices of the current tile
       sf::Vertex *triangles = &vertices[(i + j * width) * 6];

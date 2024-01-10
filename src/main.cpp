@@ -47,7 +47,7 @@ void make_map(ginseng::database &db)
     text = assets.get<sf::Texture>("tileset.png").get();
   });
   auto id = db.create_entity();
-  const auto tile_size = sf::Vector2i{ 18, 18 };
+  const sf::Vector2f tile_size { 18.f, 18.f };
   components::tilemap map{ text, tile_size, level, 20, 20, 1 };
   // map.move(50, 50);
   map.setScale(2, 2);
