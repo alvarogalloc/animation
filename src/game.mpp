@@ -32,11 +32,11 @@ public:
   }
 };
 using gameclock = std::chrono::steady_clock;
-auto now() { return gameclock::now(); }
-float elapsed_ms(gameclock::time_point start)
+float elapsed_seconds(gameclock::time_point start)
 {
-  auto duration =
-    std::chrono::duration<float, std::chrono::milli>(now() - start);
+  // this is duration<float, 1> which means
+  // seconds represented in float
+  auto duration = std::chrono::duration<float>(gameclock::now() - start);
   return duration.count();
 }
 void sleep_ms(std::uint32_t ms)
@@ -117,7 +117,7 @@ game &game::add_render_callback(func_type func)
 
 void game::run()
 {
-  auto start = now();
+  auto start = gameclock::now();
   m_flow = flow::running;
   auto game_entity = m_db.create_entity();
   m_db.add_component(game_entity, components::game_tag{});
@@ -125,8 +125,8 @@ void game::run()
   m_db.add_component(game_entity, m_assets);
   m_db.add_component(game_entity, m_flow);
   m_hook_setup.publish(m_db);
-  say::info(fmt::format("Time for startup {} s", elapsed_ms(start)));
-  start = now();
+  say::info(fmt::format("Time for startup {} s", elapsed_seconds(start)));
+  start = gameclock::now();
   sf::Event ev;
   while (m_flow == flow::running && m_window.isOpen())
   {
@@ -134,9 +134,9 @@ void game::run()
     {
       if (ev.type == sf::Event::Closed) m_flow = flow::stop;
     }
-    m_db.add_component(game_entity, elapsed_ms(start) * 1000.f);
+    m_db.add_component(game_entity, elapsed_seconds(start) * 1000.f);
     m_hook_update.publish(m_db);
-    start = now();
+    start = gameclock::now();
     m_hook_render.publish(m_db);
     m_window.display();
   }
