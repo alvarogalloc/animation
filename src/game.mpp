@@ -5,10 +5,11 @@ module;
 #include <functional>
 #include <thread>
 export module game;
-export import assetmanager;
-export import say;
-export import ginseng;
-export import sfml;
+import assetmanager;
+import components;
+import say;
+import ginseng;
+import sfml;
 
 template<typename Sig, typename... Args> class hook
 {
@@ -30,12 +31,13 @@ public:
     for (auto callback : m_callbacks) callback(args...);
   }
 };
-auto now() { return std::chrono::steady_clock::now(); }
-float elapsed_seconds(std::chrono::steady_clock::time_point start)
+using gameclock = std::chrono::steady_clock;
+auto now() { return gameclock::now(); }
+float elapsed_ms(gameclock::time_point start)
 {
   auto duration =
-    std::chrono::duration_cast<std::chrono::microseconds>(now() - start);
-  return duration.count() / 1e6f;
+    std::chrono::duration<float, std::chrono::milli>(now() - start);
+  return duration.count();
 }
 void sleep_ms(std::uint32_t ms)
 {
@@ -51,67 +53,20 @@ export
 
   class game
   {
-    using func_type = std::function<void(ginseng::database &)>;
 
   public:
+    using func_type = std::function<void(ginseng::database &)>;
     enum class flow { running, stop };
-    using tag = ginseng::tag<struct game_tag_t>;
-    game()
-      : m_db(), m_assets("./resources"),
-        m_window(sf::VideoMode{ win_width, win_height }, "Animations")
-    {
-      m_window.setFramerateLimit(60);
-    }
-    game &add_setup_callback(func_type func)
-    {
-      m_hook_setup.connect(func);
-      return *this;
-    }
-    game &add_end_callback(func_type func)
-    {
-      m_hook_end.connect(func);
-      return *this;
-    }
-    game &add_update_callback(func_type func)
-    {
-      m_hook_update.connect(func);
-      return *this;
-    }
 
-    game &add_render_callback(func_type func)
-    {
-      m_hook_render.connect(func);
-      return *this;
-    }
+    game();
 
-    void run()
-    {
-      auto start = now();
-      m_flow = flow::running;
-      auto game_entity = m_db.create_entity();
-      m_db.add_component(game_entity, tag{});
-      m_db.add_component(game_entity, &m_window);
-      m_db.add_component(game_entity, m_assets);
-      m_db.add_component(game_entity, m_flow);
-      m_hook_setup.publish(m_db);
-      say::info(fmt::format("Time for startup {} s", elapsed_seconds(start)));
-      start = now();
-      sf::Event ev;
-      while (m_flow == flow::running && m_window.isOpen())
-      {
-        while (m_window.pollEvent(ev))
-        {
-          if (ev.type == sf::Event::Closed) m_flow = flow::stop;
-        }
-        m_db.add_component(game_entity, elapsed_seconds(start));
-        m_hook_update.publish(m_db);
-        start = now();
-        m_hook_render.publish(m_db);
-        m_window.display();
-      }
-      m_hook_end.publish(m_db);
-      m_window.close();
-    }
+    game &add_setup_callback(func_type func);
+    game &add_end_callback(func_type func);
+    game &add_update_callback(func_type func);
+    game &add_render_callback(func_type func);
+
+    void run();
+
 
   private:
     hook<func_type, ginseng::database &> m_hook_setup;
@@ -124,4 +79,67 @@ export
     assetmanager m_assets;
     ginseng::database m_db;
   };
+}
+
+module :private;
+
+using func_type = game::func_type;
+game::game()
+  : m_window(sf::VideoMode{ win_width, win_height }, "Animations"),
+    m_flow(game::flow::running), m_assets("./resources"), m_db()
+{
+  m_window.setFramerateLimit(60);
+}
+
+game &game::add_setup_callback(func_type func)
+{
+  m_hook_setup.connect(func);
+  return *this;
+}
+
+game &game::add_end_callback(func_type func)
+{
+  m_hook_end.connect(func);
+  return *this;
+}
+
+game &game::add_update_callback(func_type func)
+{
+  m_hook_update.connect(func);
+  return *this;
+}
+game &game::add_render_callback(func_type func)
+{
+  m_hook_render.connect(func);
+  return *this;
+}
+
+
+void game::run()
+{
+  auto start = now();
+  m_flow = flow::running;
+  auto game_entity = m_db.create_entity();
+  m_db.add_component(game_entity, components::game_tag{});
+  m_db.add_component(game_entity, &m_window);
+  m_db.add_component(game_entity, m_assets);
+  m_db.add_component(game_entity, m_flow);
+  m_hook_setup.publish(m_db);
+  say::info(fmt::format("Time for startup {} s", elapsed_ms(start)));
+  start = now();
+  sf::Event ev;
+  while (m_flow == flow::running && m_window.isOpen())
+  {
+    while (m_window.pollEvent(ev))
+    {
+      if (ev.type == sf::Event::Closed) m_flow = flow::stop;
+    }
+    m_db.add_component(game_entity, elapsed_ms(start) * 1000.f);
+    m_hook_update.publish(m_db);
+    start = now();
+    m_hook_render.publish(m_db);
+    m_window.display();
+  }
+  m_hook_end.publish(m_db);
+  m_window.close();
 }

@@ -1,8 +1,3 @@
-module;
-#include <algorithm>
-#include <fstream>
-#include <map>
-#include <string_view>
 export module components;
 import sfml;
 import ginseng;
@@ -16,5 +11,7 @@ struct color : public sf::Color
 {
 };
 using render_box = ginseng::tag<struct render_box_tag>;
+using game_tag = ginseng::tag<struct game_tag_t>;
+
 
 }// namespace components

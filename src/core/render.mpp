@@ -12,7 +12,7 @@ import physics_debug_draw;
 export namespace render {
 class system
 {
-  sf::RenderWindow *win;
+  sf::RenderWindow *win = nullptr;
   DebugDraw debug_draw;
 
 public:
@@ -41,7 +41,7 @@ void render::system::update(ginseng::database &db)
     say::error("window is a nullptr, cant draw anything!!");
     return;
   }
-  db.visit([&](game::tag, components::color &color) { win->clear(color); });
+  db.visit([&](components::game_tag, components::color &color) { win->clear(color); });
 
   db.visit([&](components::tilemap &tilemap) { win->draw(tilemap); });
 

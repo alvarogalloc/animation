@@ -1,16 +1,17 @@
 module;
-#include <box2d/box2d.h>
 #include <cmath>
 #include <memory>
 export module physics;
-import game;
 import ginseng;
+import sfml;
 import components;
+import box2d;
 
 export namespace physics {
 // world vectors will be upsacled by this
 constexpr float upfactor{ 32.0f };
 constexpr float gravity{ 5.f };
+constexpr float pi{ 3.1416f };
 
 namespace components {
   enum class move_direction : std::uint8_t {
@@ -37,15 +38,15 @@ namespace components {
 
 }// namespace components
 
-template <typename T>
-sf::Vector2<T> world_to_coords(b2Vec2 vec)
+template<typename T> sf::Vector2<T> world_to_coords(b2Vec2 vec)
 {
-  return sf::Vector2<T>{ static_cast<T>(vec.x * upfactor), static_cast<T>(vec.y * upfactor) };
+  return sf::Vector2<T>{ static_cast<T>(vec.x * upfactor),
+    static_cast<T>(vec.y * upfactor) };
 }
-template <typename T>
-b2Vec2 coords_to_world(sf::Vector2<T> vec)
+template<typename T> b2Vec2 coords_to_world(sf::Vector2<T> vec)
 {
-  return b2Vec2{ static_cast<float>(vec.x) / upfactor, static_cast<float>(vec.y) / upfactor };
+  return b2Vec2{ static_cast<float>(vec.x) / upfactor,
+    static_cast<float>(vec.y) / upfactor };
 }
 
 std::unique_ptr<b2World> create_world()
@@ -53,6 +54,34 @@ std::unique_ptr<b2World> create_world()
   return std::make_unique<b2World>(b2Vec2(0.f, gravity));
 }
 
+components::static_body
+  create_static_box(b2World *world, b2Vec2 position, b2Vec2 size);
+
+components::dynamic_body create_dynamic_box(b2World *world,
+  b2Vec2 position,
+  b2Vec2 size,
+  float density = 1.0f,
+  float friction = 0.1f);
+
+class system
+{
+public:
+  system() : world(create_world()) {}
+  std::unique_ptr<b2World> world;
+  constexpr static float frame_time{ 1.f / 60.f };
+  constexpr static int velocity_iterations{ 8 };
+  constexpr static int position_iterations{ 3 };
+
+  void startup(ginseng::database &db);
+
+  void update(ginseng::database &db);
+};
+
+}// namespace physics
+
+
+module :private;
+namespace physics {
 components::static_body
   create_static_box(b2World *world, b2Vec2 position, b2Vec2 size)
 {
@@ -67,8 +96,8 @@ components::static_body
 components::dynamic_body create_dynamic_box(b2World *world,
   b2Vec2 position,
   b2Vec2 size,
-  float density = 1.0f,
-  float friction = 0.1f)
+  float density,
+  float friction)
 {
 
   b2BodyDef body_def{};
@@ -85,70 +114,63 @@ components::dynamic_body create_dynamic_box(b2World *world,
   return components::dynamic_body{ body };
 }
 
-class system
+
+void system::startup(ginseng::database &db)
 {
-public:
-  system() : world(create_world()) {}
-  std::unique_ptr<b2World> world;
-  constexpr static float frame_time{ 1.f / 60.f };
-  constexpr static int velocity_iterations{ 8 };
-  constexpr static int position_iterations{ 3 };
-  void startup(ginseng::database &db)
-  {
-    db.visit([&](ginseng::database::ent_id id, game::tag) {
-      db.add_component(id, world.get());
-    });
-  }
+  db.visit([&](ginseng::database::ent_id id, ::components::game_tag) {
+    db.add_component(id, world.get());
+  });
+}
 
-  void update(ginseng::database &db)
-  {
-    world->Step(frame_time, velocity_iterations, position_iterations);
-    db.visit([&](components::dynamic_body &body, ::components::sprite &sprite) {
-      const auto vel = body.body->GetLinearVelocity();
-      float desired_vel{ 0.f };
-      const float vel_increment = 0.5f;
+void system::update(ginseng::database &db)
+{
+  world->Step(frame_time, velocity_iterations, position_iterations);
+  db.visit([&](components::dynamic_body &body, ::components::sprite &sprite) {
+    const auto vel = body.body->GetLinearVelocity();
+    float desired_vel{ 0.f };
+    const float vel_increment = 0.5f;
 
-      // accelerate to max velocity
-      // through increments, that should be
-      // different for each body but not for now haha
-      using enum components::move_direction;
-      switch (body.direction)
-      {
-      case LEFT:
-        desired_vel = b2Max(vel.x - vel_increment, -body.max_velocity);
-        break;
-      case STOP:
-        if (b2Abs(vel.x) <= 1.f)
-          desired_vel = 0;
-        else
-          desired_vel =
-            vel.x > 0.f ? vel.x - vel_increment : vel.x + vel_increment;
+    // accelerate to max velocity
+    // through increments, that should be
+    // different for each body but not for now haha
+    using enum components::move_direction;
+    switch (body.direction)
+    {
+    case LEFT:
+      desired_vel = std::fmax(vel.x - vel_increment, -body.max_velocity);
+      break;
+    case STOP:
+      if (std::abs(vel.x) <= 1.f)
+        desired_vel = 0;
+      else
+        desired_vel =
+          vel.x > 0.f ? vel.x - vel_increment : vel.x + vel_increment;
 
-        break;
-      case RIGHT:
-        desired_vel = b2Min(vel.x + vel_increment, body.max_velocity);
-        break;
-      }
-      const float vel_change = desired_vel - vel.x;
-      const float impulse = body.body->GetMass() * vel_change;
-      body.body->ApplyLinearImpulse(
-        b2Vec2(impulse, 0), body.body->GetWorldCenter(), true);
+      break;
+    case RIGHT:
+      desired_vel = std::fmin(vel.x + vel_increment, body.max_velocity);
+      break;
+    default:
+      break;
+    }
+    const float vel_change = desired_vel - vel.x;
+    const float impulse = body.body->GetMass() * vel_change;
+    body.body->ApplyLinearImpulse(
+      b2Vec2(impulse, 0), body.body->GetWorldCenter(), true);
 
-      // after step, set new data for drawing
-      sprite.setPosition(world_to_coords<float>(body.body->GetPosition()));
-      sprite.setRotation(body.body->GetAngle() * 180 / b2_pi);
-      // with the direction, if going left, flip the sprite, if going right,
-      // reset it
-      const auto scale = sprite.getScale();
-      if (body.direction == LEFT)
-      {
-        sprite.setScale(-std::abs(scale.x), scale.y);
-      } else if (body.direction == RIGHT)
-      {
-        sprite.setScale(std::abs(scale.x), scale.y);
-      }
-    });
-  }
-};
-
+    // after step, set new data for drawing
+    sprite.setPosition(world_to_coords<float>(body.body->GetPosition()));
+    sprite.setRotation(body.body->GetAngle() * 180 / pi);
+    // with the direction, if going left, flip the sprite, if going right,
+    // reset it
+    const auto scale = sprite.getScale();
+    if (body.direction == LEFT)
+    {
+      sprite.setScale(-std::abs(scale.x), scale.y);
+    } else if (body.direction == RIGHT)
+    {
+      sprite.setScale(std::abs(scale.x), scale.y);
+    }
+  });
+}
 }// namespace physics

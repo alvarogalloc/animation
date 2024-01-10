@@ -1,21 +1,35 @@
 module;
-#include <box2d/box2d.h>
-#include <unordered_map>
 #include <string_view>
+#include <unordered_map>
 export module knight;
-import game;
+import ginseng;
+import sfml;
 import components;
+import assetmanager;
 import animation;
 import physics;
-export namespace entities {
+import box2d;
 
+export namespace entities {
 using knight = ginseng::tag<struct knight_tag>;
 constexpr float knight_velocity = 150.f;
+void spawn_knight(ginseng::database &db);
+}// namespace entities
+
+export namespace systems {
+void knight_move(ginseng::database &db);
+}// namespace systems
+
+
+module :private;
+
+namespace entities {
+
 void spawn_knight(ginseng::database &db)
 {
   auto id = db.create_entity();
   auto sprite = components::sprite();
-  sprite.setScale(2,2);
+  sprite.setScale(2, 2);
   db.visit([&](assetmanager &assets) {
     const sf::IntRect actual_size{ 40, 40, 28, 40 };
     auto text = assets.get<sf::Texture>("_Idle.png");
@@ -37,17 +51,17 @@ void spawn_knight(ginseng::database &db)
   });
   db.visit([&](b2World *world) {
     physics::components::dynamic_body body{ physics::create_dynamic_box(
-      world, { 0.f, 0.f }, { 0.875f*2.f, 1.25f*2.f}, 100.f, 0.9f) };
+      world, { 0.f, 0.f }, { 0.875f * 2.f, 1.25f * 2.f }, 100.f, 0.9f) };
     body.max_velocity = 8.f;
     db.add_component(id, body);
   });
   db.add_component(id, knight{});
   db.add_component(id, sprite);
 }
-
-
 }// namespace entities
-export namespace systems {
+
+namespace systems {
+
 void knight_move(ginseng::database &db)
 {
   db.visit([&](entities::knight,

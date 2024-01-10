@@ -1,9 +1,7 @@
 module;
 #include <filesystem>
 #include <future>
-#include <iostream>
 #include <memory>
-#include <span>
 #include <string_view>
 #include <type_traits>
 #include <unordered_map>
@@ -19,22 +17,20 @@ export class assetmanager
 
 private:
   template<typename T>
-  void load(std::string_view path, hash_map<T> &target_map, bool load = true)
+  bool load(std::string_view path, hash_map<T> &target_map, bool load = true)
   {
     bool error = false;
     // get type of the map
-    using insert_type =
-      std::remove_cvref_t<decltype(target_map)>::mapped_type::element_type;
-    auto [res, ok] =
-      target_map.insert({ path, std::make_shared<insert_type>() });
+    auto [res, ok] = target_map.insert({ path, std::make_shared<T>() });
     error = !ok;
     if (load)
     {
-      if constexpr (std::is_same_v<insert_type, sf::Music>)
+      if constexpr (std::is_same_v<T, sf::Music>)
         error = !res->second->openFromFile(asset_path + path.data());
       else
         error = !res->second->loadFromFile(asset_path + path.data());
     }
+    return error;
   }
 
 public:
@@ -62,7 +58,7 @@ public:
     if (!container->contains(path))
     {
       say::debug("asset not loaded, loading");
-      load(path, *container);
+      if (!load(path, *container)) say::error("asset could not be loaded");
     } else
     {
       say::debug("asset already loaded, returning");
