@@ -5,6 +5,8 @@ module;
 export module sfml;
 export namespace sf {
 using sf::Clock;
+using sf::Time;
+using sf::seconds;
 using sf::Color;
 using sf::Event;
 using sf::Font;
@@ -20,6 +22,7 @@ using sf::RenderTarget;
 using sf::RenderWindow;
 using sf::Sprite;
 using sf::Texture;
+using sf::Image;
 using sf::Vector2f;
 using sf::Vector2i;
 using sf::Vector2u;

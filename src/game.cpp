@@ -2,6 +2,8 @@ module;
 #include <chrono>
 #include <functional>
 #include <thread>
+#include <imgui.h>
+#include <imgui-SFML.h>
 export module game;
 import assetmanager;
 import components;
@@ -87,6 +89,7 @@ game::game()
     m_flow(game::flow::running), m_assets("./resources"), m_db()
 {
   m_window.setFramerateLimit(60);
+  ImGui::SFML::Init(m_window);
 }
 
 game &game::add_setup_callback(func_type func)
@@ -128,14 +131,18 @@ void game::run()
   sf::Event ev;
   while (m_flow == flow::running && m_window.isOpen())
   {
+    float delta = elapsed_seconds(start);
+    m_db.add_component(game_entity, delta);
+    start = gameclock::now();
     while (m_window.pollEvent(ev))
     {
+      ImGui::SFML::ProcessEvent(m_window, ev);
       if (ev.type == sf::Event::Closed) m_flow = flow::stop;
     }
-    m_db.add_component(game_entity, elapsed_seconds(start));
+    ImGui::SFML::Update(m_window, sf::seconds(delta));
     m_hook_update.publish(m_db);
-    start = gameclock::now();
     m_hook_render.publish(m_db);
+    ImGui::SFML::Render(m_window);
     m_window.display();
   }
   m_hook_end.publish(m_db);

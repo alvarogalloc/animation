@@ -76,10 +76,10 @@ components::tilemap::tilemap(sf::Texture *text,
         static_cast<float>(tileset_row * tile_separation)
       };
 
-      const auto start_position = sf::Vector2f{
-        static_cast<float>(tileset_column) * tileSize.x,
-        static_cast<float>(tileset_row) * tileSize.y
-      } + total_separation;
+      const auto start_position =
+        sf::Vector2f{ static_cast<float>(tileset_column) * tileSize.x,
+          static_cast<float>(tileset_row) * tileSize.y }
+        + total_separation;
 
       // first triangle
       triangles[0].texCoords = start_position;

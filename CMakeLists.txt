@@ -28,19 +28,35 @@ set(MODULE_FILES
 "src/knight.cpp"
 )
 
-add_executable(game "src/main.cpp")
-target_compile_features(game PRIVATE cxx_std_20)
-target_sources(game PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES
+# make a library for the engine
+add_library(engine STATIC ${MODULE_FILES})
+target_compile_features(engine PUBLIC cxx_std_23)
+target_link_libraries(engine PUBLIC EnTT::EnTT)
+target_link_libraries(engine PUBLIC sfml-system sfml-network sfml-graphics sfml-window)
+target_link_libraries(engine PUBLIC fmt::fmt)
+target_link_libraries(engine PUBLIC box2d::box2d)
+target_link_libraries(engine PUBLIC imgui::imgui)
+target_link_libraries(engine PUBLIC ImGui-SFML::ImGui-SFML)
+target_link_libraries(engine PUBLIC rooster_project_options rooster_project_warnings)
+target_compile_options(engine PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/wd4251>")
+target_sources(engine PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES
 ${MODULE_FILES})
 
+add_executable(game "src/main.cpp")
+target_link_libraries(game PRIVATE engine)
 file(COPY "resources" DESTINATION ${CMAKE_BINARY_DIR})
 
-target_link_libraries(game PRIVATE EnTT::EnTT)
-target_link_libraries(game PRIVATE sfml-system sfml-network sfml-graphics sfml-window)
-target_link_libraries(game PRIVATE fmt::fmt)
-target_link_libraries(game PRIVATE box2d::box2d)
-target_link_libraries(game PRIVATE imgui::imgui)
-target_link_libraries(game PRIVATE ImGui-SFML::ImGui-SFML)
-target_link_libraries(game PRIVATE rooster_project_options rooster_project_warnings)
-# remove warning C4251 in msvc
-target_compile_options(game PRIVATE "$<$<CXX_COMPILER_ID:MSVC>:/wd4251>")
+# if option TESTS is enabled
+# add test for each file in test folder
+option(BUILD_TESTING "Enable Test Builds" OFF)
+if(BUILD_TESTING)
+    find_package(ut CONFIG REQUIRED)
+    enable_testing()
+    file(GLOB TEST_SOURCES "test/*.cpp")
+    foreach(TEST_SOURCE ${TEST_SOURCES})
+        get_filename_component(TEST_NAME ${TEST_SOURCE} NAME_WE)
+        add_executable(${TEST_NAME} ${TEST_SOURCE})
+        target_link_libraries(${TEST_NAME} PRIVATE engine Boost::ut )
+        add_test(NAME ${TEST_NAME} COMMAND ${TEST_NAME})
+    endforeach()
+endif()
