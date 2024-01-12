@@ -20,6 +20,12 @@ struct tilemap
     sf::RenderStates states) const override;
   sf::Texture *tileset;
   sf::VertexArray vertices;
+  
+  sf::Vector2f tileSize;
+  int *tiles;
+  std::uint8_t width;
+  std::uint8_t height;
+  std::uint8_t tile_separation;
 };
 
 }// namespace components
