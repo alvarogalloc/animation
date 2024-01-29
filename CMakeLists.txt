@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.28)
 project(learning-animation)
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 23)
 include(cmake/setup.cmake)
 
 # generate find_package for thesefind_package("entt", "sfml", "fmt", "box2d")
-
 find_package(EnTT CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 find_package(fmt CONFIG REQUIRED)
@@ -12,20 +12,25 @@ find_package(box2d CONFIG REQUIRED)
 # imgui and imgui-sfml
 find_package(imgui CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 set(MODULE_FILES 
+"src/core/render.cpp"
+"src/core/utils.cpp"
+"src/core/say.cpp"
+"src/core/components.cpp"
 "src/core/animation.cpp"
 "src/core/assetmanager.cpp"
-"src/core/components.cpp"
-"src/core/physics_debug_draw.cpp"
 "src/core/physics.cpp"
-"src/core/render.cpp"
-"src/core/say.cpp"
 "src/core/tilemap.cpp"
-"src/ext/box2d.cpp"
-"src/ext/ginseng.cpp"
+"src/core/physics_debug_draw.cpp"
+"src/core/game.cpp"
 "src/ext/sfml.cpp"
-"src/game.cpp"
-"src/knight.cpp"
+"src/ext/ginseng.cpp"
+"src/ext/box2d.cpp"
+"src/game/level.cpp"
+"src/game/knight.cpp"
+"src/game/input_manager.cpp"
+"src/game/debug_controls.cpp"
 )
 
 # make a library for the engine
@@ -44,6 +49,7 @@ ${MODULE_FILES})
 
 add_executable(game "src/main.cpp")
 target_link_libraries(game PRIVATE engine)
+target_link_libraries(game PRIVATE nlohmann_json::nlohmann_json)
 file(COPY "resources" DESTINATION ${CMAKE_BINARY_DIR})
 
 # if option TESTS is enabled

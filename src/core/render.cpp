@@ -1,14 +1,14 @@
-export module render;
-import sfml;
-import ginseng;
-import components;
-import game;
-import tilemap;
-import say;
-import box2d;
-import physics_debug_draw;
+export module core.render;
+import ext.sfml;
+import ext.ginseng;
+import ext.box2d;
+import core.components;
+import core.game;
+import core.tilemap;
+import core.say;
+import core.physics_debug_draw;
 
-export namespace render {
+export namespace core::render {
 class system
 {
   sf::RenderWindow *win = nullptr;
@@ -19,50 +19,43 @@ public:
   void startup(ginseng::database &db);
   void update(ginseng::database &db);
 };
-}// namespace render
+}// namespace core::render
 
 module :private;
+namespace core::render {
 
-void render::system::startup(ginseng::database &db)
+void system::startup(ginseng::database &db)
 {
-  db.visit([&](sf::RenderWindow *window, b2World *world) {
+  db.visit([&](ginseng::database::ent_id id, sf::RenderWindow *window, b2World *world) {
     win = window;
     debug_draw.setWindow(window);
+    db.add_component(id, sf::View{window->getDefaultView()});
     world->SetDebugDraw(&debug_draw);
     debug_draw.SetFlags(b2Draw::e_shapeBit);
   });
 }
 
-void render::system::update(ginseng::database &db)
+void system::update(ginseng::database &db)
 {
   if (win == nullptr)
   {
     say::error("window is a nullptr, cant draw anything!!");
     return;
   }
-  db.visit([&](components::game_tag, components::color &color) { win->clear(color); });
+  db.visit(
+    [&](components::game_tag, const sf::View& view, ginseng::optional<components::color> color) {
+      win->setView(view);
+      win->clear(color ? *color : sf::Color::Black);
+    });
 
   db.visit([&](components::tilemap &tilemap) { win->draw(tilemap); });
 
-  db.visit([&](components::sprite &sprite,
-             ginseng::optional<components::render_box> render_box) {
+  db.visit([&](components::sprite &sprite) {
     // TODO: check why i need to put origin to center
     sprite.setOrigin(sprite.getLocalBounds().width / 2.0f,
       sprite.getLocalBounds().height / 2.0f);
     win->draw(sprite);
-
-    if (render_box)
-    {
-      sf::RectangleShape borderRect(sf::Vector2f(
-        sprite.getLocalBounds().width, sprite.getLocalBounds().height));
-      borderRect.setOrigin(sprite.getOrigin());
-      borderRect.setScale(sprite.getScale());
-      borderRect.setPosition(sprite.getPosition());
-      borderRect.setFillColor(sf::Color::Transparent);
-      borderRect.setOutlineColor(sf::Color::Red);
-      borderRect.setOutlineThickness(2.0f);// You can change the thickness
-      win->draw(borderRect);
-    }
   });
   db.visit([&](b2World *world) { world->DebugDraw(); });
 }
+}// namespace core::render

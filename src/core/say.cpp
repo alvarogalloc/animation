@@ -1,8 +1,10 @@
 module;
-#include <fmt/color.h>
 #include <fmt/core.h>
+#include <fmt/color.h>
 #include <string_view>
-export module say;
+
+export module core.say;
+
 void _log(const fmt::color color, const std::string_view message)
 {
   switch (color)
@@ -19,13 +21,13 @@ void _log(const fmt::color color, const std::string_view message)
   case fmt::color::orange:
     fmt::print(fmt::emphasis::bold | fg(color), "[WARN]: {}\n", message);
     break;
-  
+
   default:
     fmt::print(fmt::emphasis::bold | fg(color), "[UNKNOWN]: {}\n", message);
     break;
   }
 }
-export namespace say {
+export namespace core::say {
 
 void debug(std::string_view message)
 {
@@ -36,7 +38,7 @@ void debug(std::string_view message)
 void info(std::string_view message) { _log(fmt::color::royal_blue, message); }
 void warn(std::string_view message) { _log(fmt::color::orange, message); }
 void error(std::string_view message) { _log(fmt::color::red, message); }
-}// namespace say
+}// namespace core::say
 
 export namespace fmt {
 using ::fmt::format;

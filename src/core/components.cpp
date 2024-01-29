@@ -1,8 +1,8 @@
-export module components;
-import sfml;
-import ginseng;
+export module core.components;
+import ext.sfml;
+import ext.ginseng;
 
-export namespace components {
+export namespace core::components {
 
 struct sprite : public sf::Sprite
 {
@@ -10,8 +10,7 @@ struct sprite : public sf::Sprite
 struct color : public sf::Color
 {
 };
-using render_box = ginseng::tag<struct render_box_tag>;
 using game_tag = ginseng::tag<struct game_tag_t>;
 
 
-}// namespace components
+}// namespace core::components

@@ -1,12 +1,12 @@
 module;
 #include <string_view>
 #include <unordered_map>
-export module animation;
-import ginseng;
-import sfml;
-import components;
+export module core.animation;
+import ext.ginseng;
+import ext.sfml;
+import core.components;
 
-export namespace components {
+export namespace core::components {
 struct animation
 {
   /*
@@ -32,17 +32,17 @@ struct animations
   std::unordered_map<std::string_view, animation> sequences{};
   bool playing{ true };
 };
-}// namespace components
+}// namespace core::components
 
-export namespace systems {
-void animations(ginseng::database &db);
-}// namespace systems
+export namespace core::systems {
+void update_animations(ginseng::database &db);
+}// namespace core::systems
 
 module :private;
 
-namespace systems {
+namespace core::systems {
 
-void animations(ginseng::database &db)
+void update_animations(ginseng::database &db)
 {
   db.visit([&](float &delta) {
     auto update_animation = [&](components::sprite &sprite,
@@ -81,9 +81,6 @@ void animations(ginseng::database &db)
       sprite.setTexture(*(current_sequence.texture));
       update_animation(sprite, current_sequence);
     });
-    // db.visit([&](components::sprite &sprite, components::animation &anim) {
-    //   update_animation(sprite, anim);
-    // });
   });
 }
-}// namespace systems
+}// namespace core::systems

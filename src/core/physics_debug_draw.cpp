@@ -1,10 +1,14 @@
 module;
 #include <cmath>
+#include <cstddef>
 #include <cstdint>
-export module physics_debug_draw;
-import box2d;
-import sfml;
-export class DebugDraw : public b2Draw
+export module core.physics_debug_draw;
+import ext.box2d;
+import ext.sfml;
+export namespace core {
+
+
+class DebugDraw : public b2Draw
 {
   sf::RenderWindow *m_window{ nullptr };
   static constexpr float SCALE = 32.f;
@@ -49,8 +53,11 @@ public:
 
   void DrawAABB(b2AABB *aabb, const b2Color &color);
 };
+}// namespace core
 
 module :private;
+namespace core {
+  
 
 void DebugDraw::DrawPolygon(const b2Vec2 *vertices,
   int vertexCount,
@@ -82,7 +89,7 @@ void DebugDraw::DrawSolidPolygon(const b2Vec2 *vertices,
   {
     // polygon.setPoint(i, SFMLDraw::B2VecToSFVec(vertices[i]));
     sf::Vector2f transformedVec = DebugDraw::B2VecToSFVec(vertices[i]);
-     polygon.setPoint(static_cast<std::size_t>(i),
+    polygon.setPoint(static_cast<std::size_t>(i),
       sf::Vector2f(std::floor(transformedVec.x),
         std::floor(transformedVec.y)));// flooring the coords to fix distorted
                                        // lines on flat surfaces
@@ -174,4 +181,5 @@ void DebugDraw::DrawPoint(const b2Vec2 &p, float size, const b2Color &color)
 
   // Draw the point onto the SFML window
   m_window->draw(point);
+}
 }

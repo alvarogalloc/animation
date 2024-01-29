@@ -5,11 +5,13 @@ module;
 #include <string_view>
 #include <type_traits>
 #include <unordered_map>
-export module assetmanager;
-import say;
-import sfml;
+export module core.assetmanager;
+import core.say;
+import ext.sfml;
 
-export class assetmanager
+export namespace core {
+
+class assetmanager
 {
   template<typename T> using ptr = std::shared_ptr<T>;
   template<typename T>
@@ -17,8 +19,7 @@ export class assetmanager
 
 private:
   // returns true if loaded successfully
-  template<typename T>
-  bool load(std::string_view path, hash_map<T> &target_map)
+  template<typename T> bool load(std::string_view path, hash_map<T> &target_map)
   {
     bool error = false;
     // get type of the map
@@ -52,7 +53,7 @@ public:
       container = &fonts;
     else if constexpr (std::is_same_v<T, sf::Texture>)
       container = &textures;
-    
+
     if (!container) say::error("Asset Type is not supported");
 
     if (!container->contains(path))
@@ -78,3 +79,4 @@ private:
   hash_map<sf::Music> songs;
   hash_map<sf::Font> fonts;
 };
+}// namespace core

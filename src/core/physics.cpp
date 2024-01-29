@@ -1,13 +1,13 @@
 module;
 #include <cmath>
 #include <memory>
-export module physics;
-import ginseng;
-import sfml;
-import components;
-import box2d;
+export module core.physics;
+import ext.ginseng;
+import ext.sfml;
+import ext.box2d;
+import core.components;
 
-export namespace physics {
+export namespace core::physics {
 // world vectors will be upsacled by this
 constexpr float upfactor{ 32.0f };
 constexpr float gravity{ 5.f };
@@ -77,11 +77,11 @@ public:
   void update(ginseng::database &db);
 };
 
-}// namespace physics
+}// namespace core::physics
 
 
 module :private;
-namespace physics {
+namespace core::physics {
 components::static_body
   create_static_box(b2World *world, b2Vec2 position, b2Vec2 size)
 {
@@ -117,7 +117,7 @@ components::dynamic_body create_dynamic_box(b2World *world,
 
 void system::startup(ginseng::database &db)
 {
-  db.visit([&](ginseng::database::ent_id id, ::components::game_tag) {
+  db.visit([&](ginseng::database::ent_id id, core::components::game_tag) {
     db.add_component(id, world.get());
   });
 }
@@ -125,7 +125,7 @@ void system::startup(ginseng::database &db)
 void system::update(ginseng::database &db)
 {
   world->Step(frame_time, velocity_iterations, position_iterations);
-  db.visit([&](components::dynamic_body &body, ::components::sprite &sprite) {
+  db.visit([&](components::dynamic_body &body, core::components::sprite &sprite) {
     const auto vel = body.body->GetLinearVelocity();
     float desired_vel{ 0.f };
     const float vel_increment = 0.5f;
@@ -173,4 +173,4 @@ void system::update(ginseng::database &db)
     }
   });
 }
-}// namespace physics
+}// namespace core::physics

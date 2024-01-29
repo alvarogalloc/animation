@@ -1,6 +1,6 @@
 module;
 #include <box2d/box2d.h>
-export module box2d;
+export module ext.box2d;
 export  {
   using ::b2World;
   using ::b2AABB;

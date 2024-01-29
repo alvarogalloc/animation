@@ -5,7 +5,7 @@ module;
 #include <memory>
 #include <type_traits>
 #include <vector>
-export module ginseng;
+export module ext.ginseng;
 export namespace ginseng {
 
 namespace _detail {
