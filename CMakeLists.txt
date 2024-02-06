@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 project(learning-animation)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 include(cmake/setup.cmake)
 
 # generate find_package for thesefind_package("entt", "sfml", "fmt", "box2d")

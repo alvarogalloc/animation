@@ -32,6 +32,7 @@ public:
   game &add_event_callback(event_func_type func);
 
   void run();
+  void teardown();
 
 
 private:
@@ -123,6 +124,9 @@ void game::run()
     ImGui::SFML::Render(m_window);
     m_window.display();
   }
+  teardown();
+}
+void game::teardown(){
   m_hook_end.publish(m_db);
   ImGui::SFML::Shutdown();
   m_window.close();

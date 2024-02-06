@@ -54,6 +54,7 @@ void core::components::tilemap::create_map(const tilemap_def &definition)
     // get the current tile number
     std::size_t tileNumber = definition.tiles[i + j * definition.columns];
     if (tileNumber == 0) return;
+    tileNumber--;
 
     // find its position in the tileset tileset
     const std::size_t n_tiles_per_row =

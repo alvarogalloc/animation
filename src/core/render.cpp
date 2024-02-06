@@ -4,9 +4,9 @@ import ext.ginseng;
 import ext.box2d;
 import core.components;
 import core.game;
-import core.tilemap;
 import core.say;
 import core.physics_debug_draw;
+import core.tilemap;
 
 export namespace core::render {
 class system
@@ -47,8 +47,11 @@ void system::update(ginseng::database &db)
       win->setView(view);
       win->clear(color ? *color : sf::Color::Black);
     });
+  db.visit([&](components::tilemap &map){
+    // TODO: fixme for 
+    win->draw(map);
+  });
 
-  db.visit([&](components::tilemap &tilemap) { win->draw(tilemap); });
 
   db.visit([&](components::sprite &sprite) {
     // TODO: check why i need to put origin to center

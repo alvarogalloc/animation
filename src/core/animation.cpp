@@ -76,7 +76,7 @@ void update_animations(ginseng::database &db)
 
     db.visit([&](components::sprite &sprite, components::animations &anims) {
       if (!anims.playing) return;
-      auto &current_sequence = anims.sequences[anims.current_sequence];
+      auto &current_sequence = anims.sequences.at(anims.current_sequence);
 
       sprite.setTexture(*(current_sequence.texture));
       update_animation(sprite, current_sequence);

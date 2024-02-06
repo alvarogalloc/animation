@@ -31,32 +31,49 @@ void create_level(ginseng::database &db)
 
   auto entity_id = db.create_entity();
 
+  sf::Texture* texture;
+  db.visit([&](core::assetmanager& assets){
+     texture = assets.get<sf::Texture>("adventure/Terrain/Terrain (16x16).png").get();
+    });
+  using namespace core::components;
 
-  sf::Texture *texture;
-  db.visit([&](core::assetmanager &assets) {
-    texture = assets.get<sf::Texture>("tileset.png").get();
-  });
-  // add
+
   // clang-format off
-  core::components::tilemap_def definition {
-    .rows = 4,
-    .columns = 4,
-    .tile_separation = 1,
-    .tile_size = sf::Vector2f {18.f, 18.f},
-    .tiles = std::vector<std::size_t>{
-      19,19, 19, 19,
-      1, 1, 1, 1,
-      0, 0, 0, 0,
-      1, 2, 2, 3,
+  tilemap_def definition
+  {
+    .rows = 20,
+    .columns = 30,
+    .tile_separation = 0,
+    .tile_size = {16.f, 16.f},
+    .tiles = {
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      177,178,178,178,178,178,178,178,178,178,178,178,179,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      199,200,200,200,200,200,200,200,200,200,200,200,202,179,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+      199,200,200,200,200,200,200,200,200,200,200,200,200,202,179,0,0,0,0,36,37,0,0,0,0,0,0,0,0,0,
+      199,200,200,200,200,200,200,200,200,200,200,200,200,200,202,179,0,0,0,58,59,0,0,0,0,0,0,0,0,0,
+      199,200,200,200,200,200,200,200,200,200,200,200,200,200,200,202,178,178,178,178,178,178,178,178,178,178,178,178,178,179,
+      199,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,201,
+      199,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,201,
+      199,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,200,201
     }
   };
   // clang-format on
-  core::components::tilemap tilemap{ definition, texture };
-  tilemap.setScale(1.7778f, 1.7778f);
-  tilemap.move(100.f, 100.f);
+  tilemap tilemap{std::move(definition), texture};
+  tilemap.setScale(2.f, 2.f);
+  tilemap.move(-100.f,0.f);
   db.add_component(entity_id, std::move(tilemap));
 
-  db.add_component(entity_id, std::move(definition));
 
   db.visit([&](b2World *world) {
     auto physics_box =
@@ -65,37 +82,5 @@ void create_level(ginseng::database &db)
   });
 }
 
-void render_level_debug_gui(ginseng::database &db)
-{
-  auto edit_transform = [](auto &map) {
-    std::array tmp{ map.getPosition().x, map.getPosition().y };
-    ImGui::SliderFloat2("position", tmp.data(), 0, 100);
-    map.setPosition(tmp[0], tmp[1]);
-    tmp[0] = map.getScale().x;
-    tmp[1] = map.getScale().y;
-    ImGui::SliderFloat2("scale", tmp.data(), 0, 10);
-    map.setScale(tmp[0], tmp[1]);
-  };
-  // returns whether it should create a new tileset
-  // auto change_tile = [&](auto &definition, auto &map) {
-  //   std::size_t i = 0;
-  //   for (auto &tile : definition.tiles)
-  //   {
-  //     auto copy = static_cast<int>(tile);
-  //     ImGui::SliderInt(fmt::format("tile number {}", i).c_str(), &copy, 1, 180);
-  //     tile = static_cast<std::size_t>(copy);
-  //     i++;
-  //   }
-  //   map.create_map(definition);
-  // };
-
-  db.visit([&](core::components::tilemap &map,
-             [[maybe_unused]]core::components::tilemap_def &map_def) {
-    ImGui::Begin("Tilemap");
-    // make list of all the tiles
-    // change_tile(map_def, map);
-    edit_transform(map);
-    ImGui::End();
-  });
-}
+void render_level_debug_gui(ginseng::database &) {}
 }// namespace game::entities

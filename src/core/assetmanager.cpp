@@ -1,4 +1,5 @@
 module;
+#include <stdexcept>
 #include <filesystem>
 #include <future>
 #include <memory>
@@ -59,7 +60,9 @@ public:
     if (!container->contains(path))
     {
       say::debug("asset not loaded, loading");
-      if (!load(path, *container)) say::error("error loading asset");
+      if (!load(path, *container)) {
+          throw std::runtime_error{"error loading asset"};
+        }
     } else
     {
       say::debug("asset already loaded, returning");

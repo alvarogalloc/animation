@@ -1,6 +1,5 @@
 module;
 #include <string_view>
-#include <unordered_map>
 export module game.knight;
 import ext.ginseng;
 import ext.sfml;
