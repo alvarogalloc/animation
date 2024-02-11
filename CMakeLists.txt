@@ -14,11 +14,10 @@ find_package(box2d CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
-set(MODULE_FILES 
+set(ENGINE_MODULE_FILES 
 "src/core/render.cpp"
 "src/core/utils.cpp"
 "src/core/say.cpp"
-"src/core/components.cpp"
 "src/core/animation.cpp"
 "src/core/assetmanager.cpp"
 "src/core/physics.cpp"
@@ -28,6 +27,8 @@ set(MODULE_FILES
 "src/ext/sfml.cpp"
 "src/ext/ginseng.cpp"
 "src/ext/box2d.cpp"
+)
+set(GAME_MODULE_FILES
 "src/game/level.cpp"
 "src/game/knight.cpp"
 "src/game/input_manager.cpp"
@@ -35,7 +36,7 @@ set(MODULE_FILES
 )
 
 # make a library for the engine
-add_library(engine STATIC ${MODULE_FILES})
+add_library(engine STATIC)
 target_compile_features(engine PUBLIC cxx_std_23)
 target_link_libraries(engine PUBLIC EnTT::EnTT)
 target_link_libraries(engine PUBLIC sfml-system sfml-network sfml-graphics sfml-window)
@@ -46,11 +47,13 @@ target_link_libraries(engine PUBLIC ImGui-SFML::ImGui-SFML)
 target_link_libraries(engine PUBLIC rooster_project_options rooster_project_warnings)
 target_compile_options(engine PUBLIC "$<$<CXX_COMPILER_ID:MSVC>:/wd4251>")
 target_sources(engine PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES
-${MODULE_FILES})
+${ENGINE_MODULE_FILES})
 
 add_executable(game "src/main.cpp")
 target_link_libraries(game PRIVATE engine)
 target_link_libraries(game PRIVATE nlohmann_json::nlohmann_json)
+target_sources(engine PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES
+${GAME_MODULE_FILES})
 file(COPY "resources" DESTINATION ${CMAKE_BINARY_DIR})
 
 # if option TESTS is enabled

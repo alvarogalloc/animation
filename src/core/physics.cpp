@@ -1,29 +1,27 @@
 module;
 #include <cmath>
 #include <memory>
+#include <utility>
 export module core.physics;
 import ext.ginseng;
 import ext.sfml;
+import core.game;
+import core.say;
 import ext.box2d;
-import core.components;
 
 export namespace core::physics {
 // world vectors will be upsacled by this
 constexpr float upfactor{ 32.0f };
-constexpr float gravity{ 5.f };
+constexpr float gravity{ 10.f };
 constexpr float pi{ 3.1416f };
 
 namespace components {
   enum class move_direction : std::uint8_t {
-    STOP,
+    STOP = 0,
     UP,
     DOWN,
     LEFT,
     RIGHT,
-    UP_LEFT,
-    UP_RIGHT,
-    DOWN_LEFT,
-    DOWN_RIGHT
   };
   struct static_body
   {
@@ -33,7 +31,10 @@ namespace components {
   {
     b2Body *body;
     float max_velocity{ 10.f };
-    move_direction direction{ move_direction::STOP };
+    // first should be for the horizontal
+    // second for vertical
+    std::pair<move_direction, move_direction> directions{ move_direction::STOP,
+      move_direction::STOP };
   };
 
 }// namespace components
@@ -122,55 +123,19 @@ void system::startup(ginseng::database &db)
   });
 }
 
+
+void update_sprite(const components::dynamic_body &body, sf::Sprite &sprite)
+{
+  sprite.setPosition(world_to_coords<float>(body.body->GetPosition()));
+  sprite.setRotation(body.body->GetAngle() * 180 / pi);
+}
+
+
 void system::update(ginseng::database &db)
 {
   world->Step(frame_time, velocity_iterations, position_iterations);
-  db.visit([&](components::dynamic_body &body, core::components::sprite &sprite) {
-    const auto vel = body.body->GetLinearVelocity();
-    float desired_vel{ 0.f };
-    const float vel_increment = 0.5f;
-
-    // accelerate to max velocity
-    // through increments, that should be
-    // different for each body but not for now haha
-    using enum components::move_direction;
-    switch (body.direction)
-    {
-    case LEFT:
-      desired_vel = std::fmax(vel.x - vel_increment, -body.max_velocity);
-      break;
-    case STOP:
-      if (std::abs(vel.x) <= 1.f)
-        desired_vel = 0;
-      else
-        desired_vel =
-          vel.x > 0.f ? vel.x - vel_increment : vel.x + vel_increment;
-
-      break;
-    case RIGHT:
-      desired_vel = std::fmin(vel.x + vel_increment, body.max_velocity);
-      break;
-    default:
-      break;
-    }
-    const float vel_change = desired_vel - vel.x;
-    const float impulse = body.body->GetMass() * vel_change;
-    body.body->ApplyLinearImpulse(
-      b2Vec2(impulse, 0), body.body->GetWorldCenter(), true);
-
-    // after step, set new data for drawing
-    sprite.setPosition(world_to_coords<float>(body.body->GetPosition()));
-    sprite.setRotation(body.body->GetAngle() * 180 / pi);
-    // with the direction, if going left, flip the sprite, if going right,
-    // reset it
-    const auto scale = sprite.getScale();
-    if (body.direction == LEFT)
-    {
-      sprite.setScale(-std::abs(scale.x), scale.y);
-    } else if (body.direction == RIGHT)
-    {
-      sprite.setScale(std::abs(scale.x), scale.y);
-    }
+  db.visit([&](components::dynamic_body &body, sf::Sprite &sprite) {
+    update_sprite(body, sprite);
   });
 }
 }// namespace core::physics

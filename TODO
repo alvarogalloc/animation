@@ -1,3 +1,5 @@
 done SEPARATE IN PRIVATE PARTITIONS THE MODULES FOR COMPILE TIME
 mutability for tilemap component
 pass delta time to all update systems
+mutate directions with linear vel in physics system
+direction should be a pair (directions in x and y)

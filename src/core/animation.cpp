@@ -4,7 +4,6 @@ module;
 export module core.animation;
 import ext.ginseng;
 import ext.sfml;
-import core.components;
 
 export namespace core::components {
 struct animation
@@ -45,7 +44,7 @@ namespace core::systems {
 void update_animations(ginseng::database &db)
 {
   db.visit([&](float &delta) {
-    auto update_animation = [&](components::sprite &sprite,
+    auto update_animation = [&](sf::Sprite &sprite,
                               components::animation &anim) {
       const auto frame_time = anim.duration / anim.n_frames;
       anim.passed_time += delta;
@@ -74,7 +73,7 @@ void update_animations(ginseng::database &db)
       }
     };
 
-    db.visit([&](components::sprite &sprite, components::animations &anims) {
+    db.visit([&](sf::Sprite &sprite, components::animations &anims) {
       if (!anims.playing) return;
       auto &current_sequence = anims.sequences.at(anims.current_sequence);
 

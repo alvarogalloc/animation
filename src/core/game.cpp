@@ -1,10 +1,10 @@
 module;
 #include <functional>
 #include <stdexcept>
+#include <imgui.h>
 export module core.game;
 import core.assetmanager;
 import core.utils;
-import core.components;
 import core.say;
 import ext.ginseng;
 import ext.sfml;
@@ -13,6 +13,9 @@ import ext.sfml;
 export namespace core {
 constexpr std::uint32_t win_width{ 640 };
 constexpr std::uint32_t win_height{ 640 };
+namespace components {
+  using game_tag = ginseng::tag<struct game_tag_t>;
+}
 
 class game
 {
@@ -60,6 +63,7 @@ game::game()
     m_flow(game::flow::running), m_assets("./resources"), m_db()
 {
   m_window.setFramerateLimit(60);
+  m_window.setKeyRepeatEnabled(false);
   if (not ImGui::SFML::Init(m_window))
     throw std::runtime_error{ "could not initialize ImGui" };
 }
@@ -120,13 +124,18 @@ void game::run()
     }
     ImGui::SFML::Update(m_window, sf::seconds(delta));
     m_hook_update.publish(m_db);
+    ImGui::Begin("Debug controls");
+    ImGui::BeginTabBar("#debug");
     m_hook_render.publish(m_db);
+    ImGui::EndTabBar();
+    ImGui::End();
     ImGui::SFML::Render(m_window);
     m_window.display();
   }
   teardown();
 }
-void game::teardown(){
+void game::teardown()
+{
   m_hook_end.publish(m_db);
   ImGui::SFML::Shutdown();
   m_window.close();

@@ -11,11 +11,17 @@ import core.physics;
 import core.assetmanager;
 import core.say;
 import core.tilemap;
+import game.knight;
 
 export namespace game::entities {
 void create_level(ginseng::database &db);
 void render_level_debug_gui(ginseng::database &db);
 }// namespace game::entities
+export namespace game::systems {
+// this accesses for now only knight entities, as are considered the only
+// dynamic object
+void check_tilemap_collisions(ginseng::database &db);
+}// namespace game::systems
 
 
 module :private;
@@ -31,10 +37,11 @@ void create_level(ginseng::database &db)
 
   auto entity_id = db.create_entity();
 
-  sf::Texture* texture;
-  db.visit([&](core::assetmanager& assets){
-     texture = assets.get<sf::Texture>("adventure/Terrain/Terrain (16x16).png").get();
-    });
+  sf::Texture *texture;
+  db.visit([&](core::assetmanager &assets) {
+    texture =
+      assets.get<sf::Texture>("adventure/Terrain/Terrain (16x16).png").get();
+  });
   using namespace core::components;
 
 
@@ -69,18 +76,33 @@ void create_level(ginseng::database &db)
     }
   };
   // clang-format on
-  tilemap tilemap{std::move(definition), texture};
+  tilemap tilemap{ std::move(definition), texture };
   tilemap.setScale(2.f, 2.f);
-  tilemap.move(-100.f,0.f);
+  tilemap.move(-100.f, 0.f);
   db.add_component(entity_id, std::move(tilemap));
 
 
   db.visit([&](b2World *world) {
     auto physics_box =
-      core::physics::create_static_box(world, { 12.5f, 12.5f }, { 22.5f, 1.f });
+      core::physics::create_static_box(world, { 11.f, 12.5f }, { 22.5f, 1.f });
     db.add_component(entity_id, std::move(physics_box));
   });
 }
 
 void render_level_debug_gui(ginseng::database &) {}
 }// namespace game::entities
+
+namespace game::systems {
+
+void check_tilemap_collisions(ginseng::database &db)
+{
+  db.visit(
+    [&](ginseng::require<game::entities::knight_tag>, sf::Sprite &sprite) {
+      auto [x, y] = sprite.getPosition();
+      ImGui::Begin("tilemap collision");
+      ImGui::Text(
+        "%s", fmt::format("Knights position on screen {} {}", x, y).c_str());
+      ImGui::End();
+    });
+}
+}// namespace game::systems

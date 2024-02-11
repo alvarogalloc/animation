@@ -37,11 +37,14 @@ void debug_controls(ginseng::database &db)
   };
   db.visit([&](sf::View &view) {
     // generate imgui debug for setting size of view
-    ImGui::Begin("Debug Settings View");
-    view.setSize(edit_vector2f("Size", view.getSize()));
-    view.setCenter(edit_vector2f("Center", view.getCenter()));
-    view.setViewport(edit_rect4f("Viewport", view.getViewport()));
-    ImGui::End();
+    if (ImGui::BeginTabItem("Debug Settings View"))
+    {
+
+      view.setSize(edit_vector2f("Size", view.getSize()));
+      view.setCenter(edit_vector2f("Center", view.getCenter()));
+      view.setViewport(edit_rect4f("Viewport", view.getViewport()));
+      ImGui::EndTabItem();
+    }
   });
 }
 }// namespace game::systems

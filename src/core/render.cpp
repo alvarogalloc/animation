@@ -2,7 +2,6 @@ export module core.render;
 import ext.sfml;
 import ext.ginseng;
 import ext.box2d;
-import core.components;
 import core.game;
 import core.say;
 import core.physics_debug_draw;
@@ -43,7 +42,7 @@ void system::update(ginseng::database &db)
     return;
   }
   db.visit(
-    [&](components::game_tag, const sf::View& view, ginseng::optional<components::color> color) {
+    [&](components::game_tag, const sf::View& view, ginseng::optional<sf::Color> color) {
       win->setView(view);
       win->clear(color ? *color : sf::Color::Black);
     });
@@ -53,7 +52,7 @@ void system::update(ginseng::database &db)
   });
 
 
-  db.visit([&](components::sprite &sprite) {
+  db.visit([&](sf::Sprite &sprite) {
     // TODO: check why i need to put origin to center
     sprite.setOrigin(sprite.getLocalBounds().width / 2.0f,
       sprite.getLocalBounds().height / 2.0f);

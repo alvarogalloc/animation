@@ -3,7 +3,6 @@ module;
 #include <vector>
 export module core.tilemap;
 import ext.sfml;
-import core.components;
 import core.say;
 
 export namespace core::components {
