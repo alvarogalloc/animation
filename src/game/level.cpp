@@ -13,22 +13,23 @@ import core.assetmanager;
 import core.say;
 import core.tilemap;
 import game.knight;
+import core.systemapi;
 
 export namespace game::entities {
-void create_level(ginseng::database &db);
-void render_level_debug_gui(ginseng::database &db);
+void create_level(core::systemapi *api);
+void render_level_debug_gui(core::systemapi *api);
 }// namespace game::entities
 export namespace game::systems {
 // this accesses for now only knight entities, as are considered the only
 // dynamic object
-void check_tilemap_collisions(ginseng::database &db);
+void check_tilemap_collisions(core::systemapi *api);
 }// namespace game::systems
 
 
 module :private;
 
 namespace game::entities {
-void create_level(ginseng::database &db)
+void create_level(core::systemapi *api)
 {
   // level entity has 3 components
   // - the tilemap, renderable with vertex array
@@ -36,10 +37,10 @@ void create_level(ginseng::database &db)
   // - tilemap definition
   // TODO: check when these last two change, to trigger new tilemap creation
 
-  auto entity_id = db.create_entity();
+  auto entity_id = api->database().create_entity();
 
   sf::Texture *texture;
-  db.visit([&](core::assetmanager &assets) {
+  api->database().visit([&](core::assetmanager &assets) {
     texture =
       assets.get<sf::Texture>("adventure/Terrain/Terrain (16x16).png").get();
   });
@@ -80,24 +81,24 @@ void create_level(ginseng::database &db)
   tilemap tilemap{ std::move(definition), texture };
   tilemap.setScale(2.f, 2.f);
   tilemap.move(-100.f, 0.f);
-  db.add_component(entity_id, std::move(tilemap));
+  api->database().add_component(entity_id, std::move(tilemap));
 
 
-  db.visit([&](b2World *world) {
+  api->database().visit([&](b2World *world) {
     auto physics_box =
       core::physics::create_static_box(world, { 11.f, 12.5f }, { 22.5f, 1.f });
-    db.add_component(entity_id, std::move(physics_box));
+    api->database().add_component(entity_id, std::move(physics_box));
   });
 }
 
-void render_level_debug_gui(ginseng::database &) {}
+void render_level_debug_gui(core::systemapi *) {}
 }// namespace game::entities
 
 namespace game::systems {
 
-void check_tilemap_collisions(ginseng::database &db)
+void check_tilemap_collisions(core::systemapi *api)
 {
-  db.visit(
+  api->database().visit(
     [&](ginseng::require<game::entities::knight_tag>, sf::Sprite &sprite) {
       auto [x, y] = sprite.getPosition();
       ImGui::Begin("tilemap collision");

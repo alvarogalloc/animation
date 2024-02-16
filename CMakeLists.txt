@@ -24,6 +24,7 @@ set(ENGINE_MODULE_FILES
 "src/core/tilemap.cpp"
 "src/core/physics_debug_draw.cpp"
 "src/core/game.cpp"
+"src/core/systemapi.cpp"
 "src/ext/sfml.cpp"
 "src/ext/ginseng.cpp"
 "src/ext/box2d.cpp"

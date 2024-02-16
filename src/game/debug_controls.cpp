@@ -5,17 +5,18 @@ import core.game;
 import ext.sfml;
 import ext.ginseng;
 import core.say;
+import core.systemapi;
 
 
 export namespace game::systems {
-void debug_controls(ginseng::database &db);
+void debug_controls(core::systemapi *api);
 }
 
 module :private;
 
 namespace game::systems {
 
-void debug_controls(ginseng::database &db)
+void debug_controls(core::systemapi *api)
 {
   auto edit_vector2f = [](const char *label, sf::Vector2f v) -> sf::Vector2f {
     ImGui::Text("%s", label);
@@ -35,7 +36,7 @@ void debug_controls(ginseng::database &db)
     ImGui::Unindent();
     return r;
   };
-  db.visit([&](sf::View &view) {
+  api->database().visit([&](sf::View &view) {
     // generate imgui debug for setting size of view
     if (ImGui::BeginTabItem("Debug Settings View"))
     {

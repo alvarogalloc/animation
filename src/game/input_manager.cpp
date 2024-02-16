@@ -1,19 +1,20 @@
 export module game.input_manager;
 import ext.sfml;
 import ext.ginseng;
+import core.systemapi;
 
 export namespace game::systems {
-void handle_input(ginseng::database &, const sf::Event &);
+void handle_input(core::systemapi *, const sf::Event &);
 }
 
 module :private;
 namespace game::systems {
-void handle_input(ginseng::database &db, const sf::Event &ev)
+void handle_input(core::systemapi *api, const sf::Event &ev)
 {
   switch (ev.type)
   {
   case sf::Event::KeyPressed:
-    db.visit([&](sf::View &view) {
+    api->database().visit([&](sf::View &view) {
       const float zoom_inc = 1.01f;
       const float zoom_dec = 0.99f;
       if (ev.key.code == sf::Keyboard::Period) view.zoom(zoom_inc);

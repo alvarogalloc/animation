@@ -25,14 +25,7 @@ int main()
     game
       .add_setup_callback(
         std::bind_front(&core::physics::system::startup, &physics_system))
-      .add_setup_callback([&](ginseng::database &db) {
-        render_system.startup(db);
-        // db.visit([&](ginseng::database::ent_id id,
-        // core::components::game_tag) {
-        //   // db.add_component(id, core::components::color{ sf::Color::White
-        //   });
-        // });
-      })
+      .add_setup_callback(std::bind_front(&core::render::system::startup, &render_system))
       .add_setup_callback(game::entities::spawn_knight)
       .add_setup_callback(game::entities::create_level)
       .add_event_callback(game::systems::handle_input)
@@ -40,12 +33,12 @@ int main()
       .add_update_callback(
         std::bind_front(&core::physics::system::update, &physics_system))
       .add_update_callback(core::systems::update_animations)
-      // .add_update_callback(game::systems::check_tilemap_collisions)
       .add_render_callback(
         std::bind_front(&core::render::system::update, &render_system))
-      // .add_render_callback(game::entities::render_level_debug_gui)
       .add_render_callback(game::systems::debug_controls)
       .add_render_callback(game::systems::knight_debug_info)
+      .add_end_callback(
+        std::bind_front(&core::physics::system::finish, &physics_system))
       .run();
   } catch (const std::exception &e)
   {

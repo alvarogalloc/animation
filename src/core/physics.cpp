@@ -8,6 +8,7 @@ import ext.sfml;
 import core.game;
 import core.say;
 import ext.box2d;
+import core.systemapi;
 
 export namespace core::physics {
 // world vectors will be upsacled by this
@@ -73,9 +74,10 @@ public:
   constexpr static int velocity_iterations{ 8 };
   constexpr static int position_iterations{ 3 };
 
-  void startup(ginseng::database &db);
+  void startup(core::systemapi *api);
 
-  void update(ginseng::database &db);
+  void update(core::systemapi *api);
+  void finish(core::systemapi *api);
 };
 
 }// namespace core::physics
@@ -116,10 +118,10 @@ components::dynamic_body create_dynamic_box(b2World *world,
 }
 
 
-void system::startup(ginseng::database &db)
+void system::startup(core::systemapi *api)
 {
-  db.visit([&](ginseng::database::ent_id id, core::components::game_tag) {
-    db.add_component(id, world.get());
+  api->database().visit([&](ginseng::database::ent_id id, core::components::game_tag) {
+    api->database().add_component(id, world.get());
   });
 }
 
@@ -131,11 +133,19 @@ void update_sprite(const components::dynamic_body &body, sf::Sprite &sprite)
 }
 
 
-void system::update(ginseng::database &db)
+void system::update(core::systemapi *api)
 {
   world->Step(frame_time, velocity_iterations, position_iterations);
-  db.visit([&](components::dynamic_body &body, sf::Sprite &sprite) {
+  api->database().visit([&](components::dynamic_body &body, sf::Sprite &sprite) {
     update_sprite(body, sprite);
+  });
+}
+
+void system::finish(core::systemapi *api)
+{
+  api->database().visit([&](ginseng::database::ent_id id, core::components::game_tag) {
+    // free the b2World
+    api->database().remove_component<b2World *>(id);
   });
 }
 }// namespace core::physics

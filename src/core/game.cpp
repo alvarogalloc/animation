@@ -9,7 +9,7 @@ import core.utils;
 import core.say;
 import ext.ginseng;
 import ext.sfml;
-
+import core.systemapi;
 
 export namespace core {
 constexpr std::uint32_t win_width{ 640 };
@@ -18,13 +18,13 @@ namespace components {
   using game_tag = ginseng::tag<struct game_tag_t>;
 }
 
-class game
+class game : public core::systemapi
 {
 
 public:
-  using func_type = std::function<void(ginseng::database &)>;
+  using func_type = std::function<void(core::systemapi *)>;
   using event_func_type =
-    std::function<void(ginseng::database &, const sf::Event &)>;
+    std::function<void(core::systemapi *, const sf::Event &)>;
   enum class flow { running, stop };
 
   game();
@@ -38,16 +38,28 @@ public:
   void run();
   void teardown();
 
+  // override systemapi
+  sf::RenderWindow &window() override { return m_window; }
+  sf::View &camera() override { return m_camera; }
+  assetmanager &assets() override { return m_assets; }
+  ginseng::database &database() override { return m_db; }
+
+  // const accessors
+  const sf::RenderWindow &window() const override { return m_window; }
+  const sf::View &camera() const override { return m_camera; }
+  const assetmanager &assets() const override { return m_assets; }
+  const ginseng::database &database() const override { return m_db; }
 
 private:
-  utils::hook<func_type, ginseng::database &> m_hook_setup;
-  utils::hook<event_func_type, ginseng::database &, const sf::Event &>
+  utils::hook<func_type, core::systemapi *> m_hook_setup;
+  utils::hook<event_func_type, core::systemapi *, const sf::Event &>
     m_hook_events;
-  utils::hook<func_type, ginseng::database &> m_hook_end;
-  utils::hook<func_type, ginseng::database &> m_hook_update;
-  utils::hook<func_type, ginseng::database &> m_hook_render;
+  utils::hook<func_type, core::systemapi *> m_hook_end;
+  utils::hook<func_type, core::systemapi *> m_hook_update;
+  utils::hook<func_type, core::systemapi *> m_hook_render;
 
   sf::RenderWindow m_window;
+  sf::View m_camera;
   flow m_flow;
   assetmanager m_assets;
   ginseng::database m_db;
@@ -107,7 +119,7 @@ void game::run()
   m_db.add_component(game_entity, &m_window);
   m_db.add_component(game_entity, m_assets);
   m_db.add_component(game_entity, m_flow);
-  m_hook_setup.publish(m_db);
+  m_hook_setup.publish(this);
   say::info(
     fmt::format("Time for startup {} seconds", utils::elapsed_seconds(start)));
   start = utils::gameclock::now();
@@ -121,13 +133,13 @@ void game::run()
     {
       ImGui::SFML::ProcessEvent(m_window, ev);
       if (ev.type == sf::Event::Closed) m_flow = flow::stop;
-      m_hook_events.publish(m_db, ev);
+      m_hook_events.publish(this, ev);
     }
     ImGui::SFML::Update(m_window, sf::seconds(delta));
-    m_hook_update.publish(m_db);
+    m_hook_update.publish(this);
     ImGui::Begin("Debug controls");
     ImGui::BeginTabBar("#debug");
-    m_hook_render.publish(m_db);
+    m_hook_render.publish(this);
     ImGui::EndTabBar();
     ImGui::End();
     ImGui::SFML::Render(m_window);
@@ -137,7 +149,7 @@ void game::run()
 }
 void game::teardown()
 {
-  m_hook_end.publish(m_db);
+  m_hook_end.publish(this);
   ImGui::SFML::Shutdown();
   m_window.close();
 }
