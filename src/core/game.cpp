@@ -2,6 +2,7 @@ module;
 #include <functional>
 #include <stdexcept>
 #include <imgui.h>
+#include <filesystem>
 export module core.game;
 import core.assetmanager;
 import core.utils;

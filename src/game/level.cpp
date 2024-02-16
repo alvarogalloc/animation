@@ -1,6 +1,7 @@
 module;
 #include <cstdint>
 #include <imgui.h>
+#include <string>
 #include <utility>
 #include <vector>
 export module game.level;
