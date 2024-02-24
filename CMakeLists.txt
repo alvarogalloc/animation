@@ -13,7 +13,6 @@ find_package(box2d CONFIG REQUIRED)
 # imgui and imgui-sfml
 find_package(imgui CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
 set(ENGINE_MODULE_FILES 
 "src/core/render.cpp"
 "src/core/utils.cpp"
@@ -52,7 +51,6 @@ ${ENGINE_MODULE_FILES})
 
 add_executable(game "src/main.cpp")
 target_link_libraries(game PRIVATE engine)
-target_link_libraries(game PRIVATE nlohmann_json::nlohmann_json)
 target_sources(engine PUBLIC FILE_SET cxx_modules TYPE CXX_MODULES FILES
 ${GAME_MODULE_FILES})
 file(COPY "resources" DESTINATION ${CMAKE_BINARY_DIR})
