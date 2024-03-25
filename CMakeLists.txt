@@ -33,6 +33,7 @@ set(GAME_MODULE_FILES
 "src/game/knight.cpp"
 "src/game/input_manager.cpp"
 "src/game/debug_controls.cpp"
+"src/game/terrain.cpp"
 )
 
 # make a library for the engine
